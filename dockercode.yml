@@ -1,0 +1,47 @@
+- hosts: dockerhost
+  gather_facts: false
+  tasks:
+   - name: Add repository
+     yum_repository:
+        name: docker_repo
+        description: docker repo conf
+        baseurl: https://download.docker.com/linux/centos/7/x86_64/stable/
+        gpgcheck: no
+   - name: docker installation
+     command: "yum install docker-ce -y --nobest"
+   - name: starting docker service
+     service:
+             name: "docker"
+             state: started
+             enabled: yes
+   - name: installing python36 software
+     package:
+             name: python36
+             state: present
+   - name: installing docker python library
+     pip:
+             name: docker-py
+ - name: pulling an image for docker
+     docker_image:
+               name: ubuntu:14.04
+               source: pull
+   - name: Creating container
+     docker_container:
+        name: mydockeros1
+        image: ubuntu:14.04
+        state: started
+        ports:
+          - "8080:80"
+        detach: true
+        tty: true
+   - name: installing the latest version of Apache
+     yum:
+       name: httpd
+       state: latest
+   - name: checking httpd
+     service:
+             name: httpd
+             state: started
+   - copy:
+           content: "Docker successfully configured over ansible!!"
+           dest: "/var/www/html/index.html"
